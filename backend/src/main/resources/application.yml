@@ -26,10 +26,7 @@ spring:
       timeout: 3000ms
 
   cache:
-    type: redis
-    redis:
-      time-to-live: 600000
-      cache-null-values: false
+    type: none
 
 jwt:
   secret: recipehub-secret-key-must-be-at-least-256-bits-long-for-hs256
