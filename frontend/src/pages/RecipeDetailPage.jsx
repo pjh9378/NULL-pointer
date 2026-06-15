@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
 import { recipeApi, bookmarkApi, prApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import CommitHistory from '../components/CommitHistory';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 
 export default function RecipeDetailPage() {
   const { id } = useParams();
@@ -12,6 +12,7 @@ export default function RecipeDetailPage() {
   const [bookmarked, setBookmarked] = useState(false);
   const [showCommits, setShowCommits] = useState(false);
   const [showPrForm, setShowPrForm] = useState(false);
+  const location = useLocation();
   const [prDesc, setPrDesc] = useState('');
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function RecipeDetailPage() {
     if (user) {
       bookmarkApi.status(id).then(res => setBookmarked(res.data.bookmarked)).catch(() => {});
     }
-  }, [id, user]);
+  }, [id, user, location.key]);
 
   const handleFork = async () => {
     try {
@@ -154,6 +155,7 @@ export default function RecipeDetailPage() {
         </button>
         {showCommits && <CommitHistory recipeId={id} isOwner={isOwner} />}
       </section>
+    <div style={{ height: 80}} />
     </div>
   );
 }

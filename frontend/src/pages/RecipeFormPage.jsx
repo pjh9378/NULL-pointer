@@ -31,7 +31,7 @@ export default function RecipeFormPage() {
           category: r.category, cookingTime: r.cookingTime || '',
           difficulty: r.difficulty || 'EASY', isPublic: r.isPublic,
           groupId: r.groupId ? String(r.groupId) : '',
-          ingredients: r.ingredients.length ? r.ingredients : [{ name: '', amount: '', unit: '' }],
+          ingredients: r.ingredients.length ? r.ingredients.map(i => ({ name: i.name, amount: i.amount, unit: i.unit })) : [{ name: '', amount: '', unit: '' }],
           cookingSteps: r.cookingSteps.length ? r.cookingSteps.map(s => s.description) : [''],
         });
       });
@@ -81,7 +81,7 @@ export default function RecipeFormPage() {
         {/* 그룹 선택 */}
         <label style={labelStyle}>그룹 (선택)</label>
         <select style={inputStyle} value={form.groupId} onChange={set('groupId')}>
-          <option value="">전체 공개</option>
+          <option value="">나만보기</option>
           {groups.map(g => (
             <option key={g.id} value={g.id}>{g.name} ({g.myRole === 'OWNER' ? '그룹장' : '멤버'})</option>
           ))}

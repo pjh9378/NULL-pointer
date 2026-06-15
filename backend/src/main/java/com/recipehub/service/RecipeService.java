@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.recipehub.repository.CommitRepository;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final UserRepository userRepository;
     private final CommitService commitService;
+    private final CommitRepository commitRepository;
     private final SearchService searchService;
     private final RankingService rankingService;
     private final GroupService groupService;
@@ -142,6 +145,27 @@ public class RecipeService {
             request.getCategory(), request.getCookingTime(),
             request.getDifficulty(), request.isPublic());
 
+        // 기존 재료 삭제 후 새로 추가
+        recipe.getIngredients().clear();
+        if (request.getIngredients() != null) {
+            request.getIngredients().forEach(i -> {
+                String standardName = searchService.standardize(i.getName());
+                recipe.addIngredient(Ingredient.builder()
+                    .recipe(recipe).name(standardName)
+                    .amount(i.getAmount()).unit(i.getUnit()).build());
+            });
+        }
+
+        // 기존 조리순서 삭제 후 새로 추가
+        recipe.getCookingSteps().clear();
+        if (request.getCookingSteps() != null) {
+            for (int i = 0; i < request.getCookingSteps().size(); i++) {
+                recipe.addCookingStep(CookingStep.builder()
+                    .recipe(recipe).stepOrder(i + 1)
+                    .description(request.getCookingSteps().get(i)).build());
+            }
+        }
+
         commitService.createCommit(recipe, user,
             request.getCommitMessage() != null ? request.getCommitMessage() : "레시피 수정");
         return RecipeResponse.from(recipe);
@@ -151,9 +175,17 @@ public class RecipeService {
     @Transactional
     public void deleteRecipe(String email, Long recipeId) {
         Recipe recipe = findRecipeById(recipeId);
-        validateOwner(email, recipe);
-        searchService.removeFromTrie(recipe.getTitle());
-        recipeRepository.delete(recipe);
+            validateOwner(email, recipe);
+            searchService.removeFromTrie(recipe.getTitle());
+
+            // 커밋 이력 삭제
+            commitRepository.deleteAll(commitRepository.findByRecipeOrderByCreatedAtDesc(recipe));
+
+            // Fork된 자식 레시피들의 forkedFrom 연결 끊기
+            List<Recipe> forkedRecipes = recipeRepository.findByForkedFrom(recipe);
+            forkedRecipes.forEach(r -> r.clearForkedFrom());
+
+            recipeRepository.delete(recipe);
     }
 
     // Fork

@@ -101,4 +101,8 @@ public class Recipe {
     public void addCookingStep(CookingStep step) {
         this.cookingSteps.add(step);
     }
+
+    public void clearForkedFrom() {
+        this.forkedFrom = null;
+    }
 }

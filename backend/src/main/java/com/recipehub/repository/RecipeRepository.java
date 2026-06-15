@@ -26,6 +26,9 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     // Fork 목록
     List<Recipe> findByForkedFrom(Recipe original);
 
+
+    List<Recipe> findByTitleContainingIgnoreCase(String title);
+
     // 내가 볼 수 있는 레시피 전체 (내 레시피 + 내 그룹 레시피)
     @Query("SELECT r FROM Recipe r WHERE r.owner = :user OR " +
            "(r.group IS NOT NULL AND EXISTS (" +

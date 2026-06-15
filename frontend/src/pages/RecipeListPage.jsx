@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { recipeApi, searchApi, bookmarkApi } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function RecipeListPage() {
   const { user } = useAuth();
@@ -12,10 +12,11 @@ export default function RecipeListPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const debounceRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
-    recipeApi.getAccessible({ size: 20 })
+    recipeApi.getAccessible({ keyword: search || undefined, size: 20 })
       .then(res => setRecipes(res.data.content))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -35,16 +36,16 @@ export default function RecipeListPage() {
     }, 200);
   };
 
-  const handleSuggestionClick = (s) => {
-    setKeyword(s);
-    setSuggestions([]);
-    setSearch(s);
+  const handleSuggestionClick = (suggestion) => {
+      setSuggestions([]);
+      setKeyword('');
+      navigate(`/recipes/${suggestion.id}`);
   };
 
   return (
     <div>
       {/* 히어로 섹션 */}
-      <div style={{ background: '#EEEEEE', padding: '20px 16px 20px', position: 'relative', overflow: 'hidden', borderRadius: '0 0 20px 20px' }}>
+      <div style={{ background: '#EEEEEE', padding: '20px 16px 20px', position: 'relative', borderRadius: '0 0 20px 20px' }}>
         <div style={{ position: 'absolute', top: 0, right: 0, fontSize: 48, opacity: 0.15, lineHeight: 1, padding: 4 }}>
           🍅🌶️🧅🥩🍳
         </div>
@@ -67,9 +68,9 @@ export default function RecipeListPage() {
             {suggestions.length > 0 && (
               <ul style={suggestStyle}>
                 {suggestions.map((s, i) => (
-                  <li key={i} style={suggestItem} onMouseDown={() => handleSuggestionClick(s)}>
-                    🔍 {s}
-                  </li>
+                    <li key={i} style={suggestItem} onMouseDown={() => handleSuggestionClick(s)}>
+                        🔍 {s.title}
+                    </li>
                 ))}
               </ul>
             )}
@@ -150,5 +151,5 @@ const scrollBox = {
 const cardStyle = { border: '1px solid #eee', borderRadius: 8, padding: 12, cursor: 'pointer', background: '#fff' };
 const badgeStyle = { background: '#f0f0f0', padding: '2px 6px', borderRadius: 4, fontSize: 10, color: '#555' };
 const emptyText = { fontSize: 12, color: '#aaa', margin: 0 };
-const suggestStyle = { position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, zIndex: 100, margin: 0, padding: 0, listStyle: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' };
+const suggestStyle = { position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, zIndex: 999, margin: '4px 0 0', padding: 0, listStyle: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' };
 const suggestItem = { padding: '10px 14px', cursor: 'pointer', fontSize: 14, borderBottom: '1px solid #f0f0f0' };

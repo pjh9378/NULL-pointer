@@ -4,6 +4,7 @@ import com.recipehub.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class SearchController {
 
     // Trie 자동완성
     @GetMapping("/autocomplete")
-    public ResponseEntity<List<String>> autocomplete(@RequestParam String prefix) {
+    public ResponseEntity<List<Map<String, Object>>> autocomplete(@RequestParam String prefix) {
         return ResponseEntity.ok(searchService.autocomplete(prefix));
     }
 
